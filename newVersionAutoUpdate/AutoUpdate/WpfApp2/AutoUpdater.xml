@@ -1,0 +1,17 @@
+<?xml version="3.1"?>
+<AutoUpdater> 
+<URLAddres URL="\webfile"/>
+<UpdateInfo> 
+<UpdateTime Date = "2018-05-23"/> 
+<Version Num = "3.1.0.1"/>
+</UpdateInfo> 
+<UpdateFileList> 
+<UpdateFile FileName = "aa.txt"/>
+<UpdateFile FileName = "bb.rar"/> 
+<UpdateFile FileName = "bb.CAB"/> 
+</UpdateFileList> 
+<RestartApp>
+<ReStart Allow = "Yes"/>
+<AppName Name = "AutoUpdate.exe"/> 
+</RestartApp> 
+</AutoUpdater> 
