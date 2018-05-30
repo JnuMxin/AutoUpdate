@@ -18,6 +18,7 @@ using System.Xml;
 using System.Collections;
 using Microsoft.Win32;
 using System.Text.RegularExpressions;
+using System.Diagnostics;
 
 namespace WpfApp2
 {
@@ -28,7 +29,8 @@ namespace WpfApp2
     {
         // 获取当前目录
         public string currentPath = AppDomain.CurrentDomain.BaseDirectory;
-        
+        private static System.Diagnostics.Process p;
+
         public MainWindow()
         {
             InitializeComponent();
@@ -456,6 +458,28 @@ namespace WpfApp2
                 this.WriteLog("异常"+ex.Message);
                 return;
             }
+        }
+
+        private void CompleteUpdate(object sender, RoutedEventArgs e)
+        {
+            if (p == null)
+            {
+                string bat = System.IO.Path.Combine(currentPath, @"..\..\..\..\update.bat");
+
+                p = new System.Diagnostics.Process();
+
+                p.StartInfo.FileName = bat;
+                p.Start();
+                Application.Current.Shutdown();
+            }
+            else
+            {
+                if (p.HasExited) //是否正在运行
+                {
+                    p.Start();
+                }
+            }
+            p.StartInfo.WindowStyle = System.Diagnostics.ProcessWindowStyle.Normal;
         }
     }
 }
