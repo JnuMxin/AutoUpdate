@@ -35,7 +35,7 @@ namespace WpfApp2
         {
             InitializeComponent();
         }
-        
+
         public void Hide_all_pannel()
         {
             text_panel.Visibility = Visibility.Collapsed;
@@ -47,21 +47,22 @@ namespace WpfApp2
 
         private void MenuItem_Click(object sender, RoutedEventArgs e)
         {
-            try{
+            try
+            {
                 string filname = System.IO.Path.Combine(currentPath, @"..\..\AutoUpdater.xml");
                 StreamReader reader = new StreamReader(filname);
                 string version = reader.ReadLine();
                 version = version.Substring(15, 3);
                 reader.Close();
-                MessageBox.Show("当前版本为"+version, "提示");
+                MessageBox.Show("当前版本为" + version, "提示");
             }
             catch (Exception ex)
             {
                 MessageBox.Show(ex.Message, "错误", MessageBoxButton.OK);
-                this.WriteLog("异常"+ex.Message);
+                this.WriteLog("异常" + ex.Message);
                 return;
             }
-            
+
         }
 
         private void SysConfig(object sender, RoutedEventArgs e)
@@ -69,11 +70,11 @@ namespace WpfApp2
             try
             {
                 this.Hide_all_pannel();
-                
+
                 string sysconfig = System.IO.Path.Combine(currentPath, @"..\..\AutoUpdater.xml");
                 StreamReader reader = new StreamReader(sysconfig);
                 string content = reader.ReadToEnd();
-                
+
                 textblock.Text = content;
                 reader.Close();
                 text_panel.Visibility = Visibility;
@@ -81,7 +82,7 @@ namespace WpfApp2
             catch (Exception ex)
             {
                 MessageBox.Show(ex.Message, "错误", MessageBoxButton.OK);
-                this.WriteLog("异常"+ex.Message);
+                this.WriteLog("异常" + ex.Message);
                 return;
             }
         }
@@ -98,7 +99,7 @@ namespace WpfApp2
 
                 if (thePreUpdateDate != "")
                 {
-                    if(Convert.ToDateTime(thePreUpdateDate) >= Convert.ToDateTime(theLastUpdateDate))
+                    if (Convert.ToDateTime(thePreUpdateDate) >= Convert.ToDateTime(theLastUpdateDate))
                     {
                         // 客户端更新日期大于服务器端，不用更新
                         MessageBox.Show("当前已是最新版本！", "提示", MessageBoxButton.OK);
@@ -114,11 +115,108 @@ namespace WpfApp2
             catch (Exception ex)
             {
                 MessageBox.Show(ex.Message, "错误", MessageBoxButton.OK);
-                this.WriteLog("异常"+ex.Message);
+                this.WriteLog("异常" + ex.Message);
                 return;
             }
 
         }
+
+
+        private void SelecUpdata(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                this.Hide_all_pannel();
+                selecUpdata_panel.Visibility = Visibility;
+                // 初始化
+                string urlText = currentPath;
+                this.selecUpdataedit.Text = urlText;
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message, "错误", MessageBoxButton.OK);
+                this.WriteLog("异常" + ex.Message);
+                return;
+            }
+
+        }
+
+       
+
+        private void UpdateClick(object sender, RoutedEventArgs e)
+        {
+
+            if (p == null)
+            {
+
+                //获取现在的版本的文件夹的名字 如1.0
+                string sourDirstring = "..\\..\\..\\";
+                DirectoryInfo di = new DirectoryInfo(System.IO.Path.Combine(currentPath, sourDirstring));
+
+                //改写selectupdate.bat文件的内容
+                //读
+                string conold = "";
+                FileStream fsold = new FileStream(System.IO.Path.Combine(currentPath, @"..\..\..\..\selectupdate.bat"), FileMode.Open, FileAccess.Read);
+                StreamReader srold = new StreamReader(fsold);
+                conold = srold.ReadToEnd();
+                Regex regold = new Regex(@"\s(\.)(\\)((\S)*)\s");
+                conold = regold.Replace(conold, " .\\" + di.Name + " ");
+                srold.Close();
+                fsold.Close();
+                //写
+                FileStream fs2old = new FileStream(System.IO.Path.Combine(currentPath, @"..\..\..\..\selectupdate.bat"), FileMode.Open, FileAccess.Write);
+                StreamWriter swold = new StreamWriter(fs2old);
+                swold.WriteLine(conold);
+                swold.Close();
+                fs2old.Close();
+                string connew = "";
+                FileStream fsnew = new FileStream(System.IO.Path.Combine(currentPath, @"..\..\..\..\selectupdate.bat"), FileMode.Open, FileAccess.Read);
+                StreamReader srnew = new StreamReader(fsnew);
+                connew = srnew.ReadToEnd();
+                Regex regnew = new Regex(@"\s(\d)(\.)(\d)\s");
+                connew = regnew.Replace(connew, " " + this.Revisionedit.Text + " ");
+                srnew.Close();
+                fsnew.Close();
+                //写
+                FileStream fs2new = new FileStream(System.IO.Path.Combine(currentPath, @"..\..\..\..\selectupdate.bat"), FileMode.Open, FileAccess.Write);
+                StreamWriter swnew = new StreamWriter(fs2new);
+                swnew.WriteLine(connew);
+                swnew.Close();
+                fs2new.Close();
+
+
+                //复制文件
+                string bat = System.IO.Path.Combine(currentPath, @"..\..\..\..\selectupdate.bat");
+                p = new System.Diagnostics.Process();
+                p.StartInfo.FileName = bat;
+                p.Start();
+
+
+
+                //从selectupdate.bat中的到复制的目标文件 
+                string[] lines = this.selecUpdataedit.Text.Split(new[] { " " },StringSplitOptions.None);
+                string tarDirstring = "..\\..\\..\\..\\" + this.Revisionedit.Text + "\\WpfApp2\\download";
+
+                foreach (string str in lines)
+                {
+                    UpdateFile(System.IO.Path.Combine(currentPath, @"..\..\webfile"), System.IO.Path.Combine(currentPath, tarDirstring), str);
+                }
+
+                Application.Current.Shutdown();
+            }
+            else
+            {
+                if (p.HasExited) //是否正在运行
+                {
+                    p.Start();
+                }
+            }
+            p.StartInfo.WindowStyle = System.Diagnostics.ProcessWindowStyle.Normal;
+
+
+
+        }
+
 
         // 获取配置文件日期
         private string GetTheLastUpdateTime(string Dir)
@@ -131,7 +229,7 @@ namespace WpfApp2
                 {
                     return "配置文件不存在";
                 }
-                
+
                 StreamReader reader = new StreamReader(AutoUpdaterFileName);
                 string content = reader.ReadToEnd();
                 string expr = @"Date(.*)/";
@@ -146,7 +244,7 @@ namespace WpfApp2
             catch (Exception ex)
             {
                 MessageBox.Show(ex.Message, "错误", MessageBoxButton.OK);
-                this.WriteLog("异常"+ex.Message);
+                this.WriteLog("异常" + ex.Message);
                 return null;
             }
 
@@ -165,7 +263,7 @@ namespace WpfApp2
 
                 string downloadPath = System.IO.Path.Combine(currentPath, @"..\..\download\");
                 this.update_panel.Visibility = Visibility;
-                foreach(FileInfo nextFile in files)
+                foreach (FileInfo nextFile in files)
                 {
                     File.Copy(nextFile.FullName, downloadPath + nextFile.Name, true);
                     this.tb.Text = "更新" + nextFile.Name;
@@ -173,7 +271,7 @@ namespace WpfApp2
                     this.percent.Text = "更新进度..." + (this.progressBarUpdate.Value / this.progressBarUpdate.Maximum * 100) + "%";
                 }
                 this.percent.Text = "更新完成";
-                if(MessageBox.Show("更新至最新版本", "提示", MessageBoxButton.OK) == MessageBoxResult.OK)
+                if (MessageBox.Show("更新至最新版本", "提示", MessageBoxButton.OK) == MessageBoxResult.OK)
                 {
                     this.update_panel.Visibility = Visibility.Collapsed;
                 }
@@ -183,9 +281,83 @@ namespace WpfApp2
             catch (Exception ex)
             {
                 MessageBox.Show(ex.Message, "错误", MessageBoxButton.OK);
-                this.WriteLog("异常"+ex.Message);
+                this.WriteLog("异常" + ex.Message);
                 return;
             }
+        }
+
+        //targetr是webfile中的根目录  targetDir是NEWAUTO中的download  targetfile是文件的完整路径
+        private void UpdateFile(string Dir,string targetDir, string targetfile)
+        {
+                DirectoryInfo directory = new DirectoryInfo(Dir);
+                FileInfo[] files = directory.GetFiles();
+                this.progressBarUpdate.Minimum = 0;
+                this.progressBarUpdate.Maximum = files.Length;
+                this.progressBarUpdate.Value = 0;
+
+            string downloadPath;
+            this.selecUpdata_panel.Visibility = Visibility;
+
+            //此处要等新建完文件在复制文件，不然会出错
+            Thread.Sleep(6000);
+            foreach (FileInfo nextFile in files)
+                {
+                    if (targetfile == nextFile.FullName)
+                    {
+                    downloadPath  = System.IO.Path.Combine(targetDir, nextFile.Name);
+                    nextFile.CopyTo(downloadPath);
+                    }
+                } 
+        }
+
+
+        private bool IsValidPath(string path, bool allowRelativePaths = false)
+        {
+            bool isValid = true;
+
+            try
+            {
+                string fullPath = System.IO.Path.GetFullPath(path);
+
+                if (allowRelativePaths)
+                {
+                    isValid = System.IO.Path.IsPathRooted(path);
+                }
+                else
+                {
+                    string root = System.IO.Path.GetPathRoot(path);
+                    isValid = string.IsNullOrEmpty(root.Trim(new char[] { '\\', '/' })) == false;
+                }
+            }
+            catch (Exception ex)
+            {
+                isValid = false;
+            }
+
+            return isValid;
+        }
+
+
+        private void CopyFiletodir(string targetfile, string dir)
+        {
+            
+            if (IsValidPath(targetfile, true) == false)
+            {
+                targetfile = targetfile.Replace(@"\","/");
+            }
+
+            if (IsValidPath(dir, true) == false)
+            {
+                dir = dir.Replace(@"\", "/");
+            }
+
+            targetfile = System.IO.Path.GetFullPath(targetfile);
+            dir = System.IO.Path.GetFullPath(dir);
+
+            dir += @"\";
+            dir = dir+System.IO.Path.GetFileName(targetfile);
+
+            File.Copy(targetfile, dir);
         }
 
         private void WriteLog(string text)
@@ -213,7 +385,7 @@ namespace WpfApp2
             catch (Exception ex)
             {
                 MessageBox.Show(ex.Message, "错误", MessageBoxButton.OK);
-                this.WriteLog("异常"+ex.Message);
+                this.WriteLog("异常" + ex.Message);
                 return;
             }
         }
@@ -225,11 +397,11 @@ namespace WpfApp2
                 this.Hide_all_pannel();
                 newConfig_panel.Visibility = Visibility;
                 // 初始化
-                string configText = "<?xml version=\"1.0\"?>\n"+
+                string configText = "<?xml version=\"1.0\"?>\n" +
                                     "<AutoUpdater>\n" +
                                     "<URLAddres URL=\"\\webfile\" />\n" +
                                     "<UpdateInfo>\n" +
-                                    "<UpdateTime Date = \""+ DateTime.Now.ToString("yyyy-MM-dd") + "\"/>\n" +
+                                    "<UpdateTime Date = \"" + DateTime.Now.ToString("yyyy-MM-dd") + "\"/>\n" +
                                      "</UpdateInfo>\n" +
                                     "<UpdateFileList>\n" +
                                     "<UpdateFile FileName = \"filename1\" />\n" +
@@ -246,7 +418,7 @@ namespace WpfApp2
             catch (Exception ex)
             {
                 MessageBox.Show(ex.Message, "错误", MessageBoxButton.OK);
-                this.WriteLog("异常"+ex.Message);
+                this.WriteLog("异常" + ex.Message);
                 return;
             }
         }
@@ -257,7 +429,7 @@ namespace WpfApp2
             {
                 //绑定到我的配置文件里
                 string configDir = System.IO.Path.Combine(currentPath, @"..\..\myConfig\");
-                if(!Directory.Exists(configDir))
+                if (!Directory.Exists(configDir))
                 {
                     Directory.CreateDirectory(configDir);
                 }
@@ -288,7 +460,7 @@ namespace WpfApp2
             catch (Exception ex)
             {
                 MessageBox.Show(ex.Message, "错误", MessageBoxButton.OK);
-                this.WriteLog("异常"+ex.Message);
+                this.WriteLog("异常" + ex.Message);
                 return;
             }
         }
@@ -325,7 +497,7 @@ namespace WpfApp2
             catch (Exception ex)
             {
                 MessageBox.Show(ex.Message, "错误", MessageBoxButton.OK);
-                this.WriteLog("异常"+ex.Message);
+                this.WriteLog("异常" + ex.Message);
                 return;
             }
         }
@@ -352,7 +524,7 @@ namespace WpfApp2
                     return;
                 }
                 string fileName = ofd.FileName;     //打开的文件名 
-                
+
                 // 显示配置文件
                 StreamReader reader = new StreamReader(fileName);
                 string content = reader.ReadToEnd();
@@ -365,7 +537,7 @@ namespace WpfApp2
             catch (Exception ex)
             {
                 MessageBox.Show(ex.Message, "错误", MessageBoxButton.OK);
-                this.WriteLog("异常"+ex.Message);
+                this.WriteLog("异常" + ex.Message);
                 return;
             }
         }
@@ -387,7 +559,7 @@ namespace WpfApp2
             catch (Exception ex)
             {
                 MessageBox.Show(ex.Message, "错误", MessageBoxButton.OK);
-                this.WriteLog("异常"+ex.Message);
+                this.WriteLog("异常" + ex.Message);
                 return;
             }
         }
@@ -406,7 +578,7 @@ namespace WpfApp2
                 string content = reader.ReadToEnd();
                 string expr = @"FileName(.*)/";
                 MatchCollection mc = Regex.Matches(content, expr);
-                foreach(Match m in mc)
+                foreach (Match m in mc)
                 {
                     files.Add(m.ToString().Split('"')[1]);
                 }
@@ -420,7 +592,7 @@ namespace WpfApp2
                 }
                 foreach (string f in files)
                 {
-                    File.Create(configDir + "\\" + f);
+                    CopyFiletodir(f, configDir);
                 }
                 // 写入日志
                 this.WriteLog("根据配置文件生成版本" + version);
@@ -430,7 +602,7 @@ namespace WpfApp2
             catch (Exception ex)
             {
                 MessageBox.Show(ex.Message, "错误", MessageBoxButton.OK);
-                this.WriteLog("异常"+ex.Message);
+                this.WriteLog("异常" + ex.Message);
                 return;
             }
         }
@@ -443,7 +615,7 @@ namespace WpfApp2
                 string version = this.myConfigtxt.Text.Substring(15, 3);
                 string filename = System.IO.Path.Combine(currentPath, @"..\..\myConfig\" + version + ".xml");
 
-                if(MessageBox.Show("确定要删除该配置文件吗","警告", MessageBoxButton.OKCancel) == MessageBoxResult.OK)
+                if (MessageBox.Show("确定要删除该配置文件吗", "警告", MessageBoxButton.OKCancel) == MessageBoxResult.OK)
                 {
                     File.Delete(filename);
                     MessageBox.Show("删除成功");
@@ -455,7 +627,7 @@ namespace WpfApp2
             catch (Exception ex)
             {
                 MessageBox.Show(ex.Message, "错误", MessageBoxButton.OK);
-                this.WriteLog("异常"+ex.Message);
+                this.WriteLog("异常" + ex.Message);
                 return;
             }
         }
