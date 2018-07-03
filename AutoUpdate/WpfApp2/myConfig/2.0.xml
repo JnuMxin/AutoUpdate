@@ -1,0 +1,16 @@
+<?xml version="2.0"?>
+<AutoUpdater>
+<URLAddres URL="\webfile" />
+<UpdateInfo>
+<UpdateTime Date = "2018-06-21"/>
+</UpdateInfo>
+<UpdateFileList>
+<UpdateFile FileName = "filename1" />
+<UpdateFile FileName = "filename2" />
+<UpdateFile FileName = "filename3" />
+</UpdateFileList>
+<RestartApp>
+<ReStart Allow = "Yes" />
+<AppName Name = "AutoUpdate.exe" />
+</RestartApp>
+</AutoUpdater>

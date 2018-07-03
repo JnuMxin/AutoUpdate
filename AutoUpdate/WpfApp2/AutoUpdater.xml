@@ -1,8 +1,9 @@
+as
 <?xml version="3.1"?>
 <AutoUpdater> 
 <URLAddres URL="\webfile"/>
 <UpdateInfo> 
-<UpdateTime Date = "2018-05-23"/> 
+<UpdateTime Date = "2018-05-23/"/> 
 <Version Num = "3.1.0.1"/>
 </UpdateInfo> 
 <UpdateFileList> 
